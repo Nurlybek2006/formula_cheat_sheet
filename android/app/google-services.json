@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764747409548",
+    "project_id": "formula-cheat-sheet",
+    "storage_bucket": "formula-cheat-sheet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764747409548:android:9b42522705f3221996b3a9",
+        "android_client_info": {
+          "package_name": "com.example.formula_cheat_sheet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUzN0Pao5PhYY4ChUpMDszhGu87iKAcYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

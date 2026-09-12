@@ -13,33 +13,23 @@ import 'app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // HiveService — wrap in try/catch so app always launches
-  try {
-    await HiveService.instance.init();
-  } catch (e) {
-    debugPrint('HiveService: $e');
-  }
+  // Initialise services — wrap each in try/catch so a crash doesn't kill app
+  await HiveService.instance.init();
 
-  // Non-critical services: failures don't prevent app launch
   try {
     await ConnectivityService.instance.init();
   } catch (e) {
-    debugPrint('ConnectivityService: $e');
+    debugPrint('ConnectivityService.init error: $e');
   }
 
   try {
     await SyncService.instance.init();
-    unawaited(SyncService.instance.syncIfOnline());
+    SyncService.instance.syncIfOnline();
   } catch (e) {
-    debugPrint('SyncService: $e');
+    debugPrint('SyncService.init error: $e');
   }
 
   runApp(const _AppRoot());
-}
-
-// ignore: prefer_void_to_null
-void unawaited(Future<void> future) {
-  future.catchError((e) => debugPrint('Background sync error: $e'));
 }
 
 class _AppRoot extends StatelessWidget {
@@ -60,3 +50,5 @@ class _AppRoot extends StatelessWidget {
     );
   }
 }
+
+

@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'dart:io' show Directory, Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import '../models/formula_model.dart';
 import '../models/subject_model.dart';
 import '../models/topic_model.dart';
@@ -30,10 +29,12 @@ class HiveService {
   late Box<String> _quizResultsBox;
 
   Future<void> init() async {
-    // Use app support directory to avoid OneDrive/iCloud sync issues
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-      final dir = await getApplicationSupportDirectory();
-      Hive.init('${dir.path}/hive_data');
+    // On Windows/Linux/macOS use LocalAppData to avoid OneDrive/sync folders
+    if (!kIsWeb && !Platform.isAndroid && !Platform.isIOS) {
+      final appDataPath = _desktopHivePath();
+      final dir = Directory(appDataPath);
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      Hive.init(appDataPath);
     } else {
       await Hive.initFlutter();
     }
@@ -48,6 +49,25 @@ class HiveService {
       await _seedData();
       await _userDataBox.put(_kSeededKey, 'true');
     }
+  }
+
+  /// Returns a path inside AppData (Windows) or home (Linux/macOS)
+  /// that is NOT under OneDrive/iCloud sync.
+  static String _desktopHivePath() {
+    if (Platform.isWindows) {
+      // LOCALAPPDATA is always local, never OneDrive-synced
+      final local = Platform.environment['LOCALAPPDATA'] ?? '';
+      if (local.isNotEmpty) return '$local\\formula_cheat_sheet\\hive';
+      // Fallback: temp dir
+      return '${Platform.environment['TEMP'] ?? 'C:\\Temp'}\\formula_cheat_sheet\\hive';
+    }
+    if (Platform.isMacOS) {
+      final home = Platform.environment['HOME'] ?? '/tmp';
+      return '$home/Library/Application Support/formula_cheat_sheet/hive';
+    }
+    // Linux
+    final home = Platform.environment['HOME'] ?? '/tmp';
+    return '$home/.local/share/formula_cheat_sheet/hive';
   }
 
   // ── SEED ────────────────────────────────────────────────────────────────
